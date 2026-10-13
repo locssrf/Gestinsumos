@@ -19,6 +19,7 @@ public class MenuPrincipal {
 
     private final AuthService auth = new AuthService();
     private final UsuarioService usuarioService = new UsuarioService(auth);
+    private final MenuInsumos menuInsumos = new MenuInsumos(auth);
 
     public void iniciar() {
         int opcion;
@@ -56,6 +57,8 @@ public class MenuPrincipal {
                 auth.iniciarSesion(username, password);
                 System.out.println("\nBienvenido, " + auth.getUsuarioActual().getNombre()
                         + " (" + auth.getUsuarioActual().getRol().getDescripcion() + ")");
+                // GES-2: al entrar, el sistema avisa si hay insumos caducados o por caducar
+                menuInsumos.mostrarAlertas(false);
                 menuUsuario();
                 return;
             } catch (ValidacionException e) {
@@ -95,7 +98,7 @@ public class MenuPrincipal {
             System.out.println("2. Editar mi perfil");
             System.out.println("3. Cambiar contrasena");
             System.out.println("4. Cambiar pregunta de seguridad");
-            System.out.println("5. Modulo de insumos (Sprint 2 - en desarrollo)");
+            System.out.println("5. Modulo de insumos");
             // Polimorfismo: la opcion solo aparece si el objeto es Administrador
             if (u.puedeGestionarUsuarios()) {
                 System.out.println("6. Gestion de usuarios y roles");
@@ -109,8 +112,7 @@ public class MenuPrincipal {
                 case 3: cambiarPassword(); break;
                 case 4: cambiarPregunta(); break;
                 case 5:
-                    System.out.println("Este modulo se implementara en el Sprint 2.");
-                    Consola.pausa();
+                    menuInsumos.mostrar();
                     break;
                 case 6:
                     if (u.puedeGestionarUsuarios()) {

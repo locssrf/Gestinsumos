@@ -5,7 +5,7 @@ import vista.MenuPrincipal;
 
 /**
  * Punto de entrada del Sistema de Gestion de Insumos.
- * Avance: Sprint 1 (Gestion de usuarios) + estructura base del Sprint 2.
+ * Sprint 1: Gestion de usuarios | Sprint 2: Gestion de insumos.
  */
 public class Main {
 
