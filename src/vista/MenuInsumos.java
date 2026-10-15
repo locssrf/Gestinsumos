@@ -45,14 +45,14 @@ public class MenuInsumos {
                 System.out.println("4. Registrar insumo");
                 System.out.println("5. Modificar insumo");
                 System.out.println("6. Eliminar insumo");
-                System.out.println("7. Gestionar categorias");
+                System.out.println("7. Gestionar categorías");
                 System.out.println("8. Gestionar fechas de caducidad");
             }
             System.out.println("0. Volver");
-            opcion = Consola.leerEntero("Seleccione una opcion: ");
+            opcion = Consola.leerEntero("Seleccione una opción: ");
 
             if (opcion >= 4 && !esAdmin) {
-                System.out.println("Opcion no valida.");
+                System.out.println("Opción no válida.");
                 continue;
             }
             try {
@@ -66,7 +66,7 @@ public class MenuInsumos {
                     case 7: menuCategorias(); break;
                     case 8: menuCaducidad(); break;
                     case 0: break;
-                    default: System.out.println("Opcion no valida.");
+                    default: System.out.println("Opción no válida.");
                 }
             } catch (ValidacionException e) {
                 System.out.println("  ERROR: " + e.getMessage());
@@ -86,12 +86,12 @@ public class MenuInsumos {
     private void registrar() throws ValidacionException {
         Consola.titulo("REGISTRAR INSUMO");
         if (categoriaService.listar().isEmpty()) {
-            throw new ValidacionException("Primero debe crear al menos una categoria (opcion 7).");
+            throw new ValidacionException("Primero debe crear al menos una categoría (opción 7).");
         }
         String nombre = Consola.leerTexto("Nombre: ");
-        String descripcion = Consola.leerTexto("Descripcion (opcional): ");
+        String descripcion = Consola.leerTexto("Descripción (opcional): ");
         mostrarCategoriasCortas();
-        String categoria = Consola.leerTexto("ID de la categoria: ");
+        String categoria = Consola.leerTexto("ID de la categoría: ");
         String unidad = Consola.leerTexto("Unidad de medida (" + UnidadMedida.opciones() + "): ");
         String cantidad = Consola.leerTexto("Cantidad: ");
         String fecha = Consola.leerTexto("Fecha de caducidad (dd/mm/aaaa): ");
@@ -110,9 +110,9 @@ public class MenuInsumos {
 
         System.out.println("(Deje en blanco para conservar el valor actual)");
         String nombre = pedir("Nombre", actual.getNombre());
-        String descripcion = pedir("Descripcion", actual.getDescripcion());
+        String descripcion = pedir("Descripción", actual.getDescripcion());
         mostrarCategoriasCortas();
-        String categoria = pedir("ID de la categoria", String.valueOf(actual.getCategoria().getId()));
+        String categoria = pedir("ID de la categoría", String.valueOf(actual.getCategoria().getId()));
         String unidad = pedir("Unidad (" + UnidadMedida.opciones() + ")", actual.getUnidad().getSimbolo());
         String cantidad = pedir("Cantidad", actual.getCantidadFormateada());
         String fecha = pedir("Fecha de caducidad (dd/mm/aaaa)", actual.getFechaFormateada());
@@ -128,11 +128,11 @@ public class MenuInsumos {
         imprimirTabla(insumoService.listar());
         int id = Consola.leerEntero("\nID del insumo a eliminar: ");
         Insumo i = insumoService.buscarPorId(id);
-        if (Consola.confirmar("Seguro que desea eliminar '" + i.getNombre() + "'?")) {
+        if (Consola.confirmar("¿Seguro que desea eliminar '" + i.getNombre() + "'?")) {
             insumoService.eliminar(id);
             System.out.println("Insumo eliminado.");
         } else {
-            System.out.println("Operacion cancelada.");
+            System.out.println("Operación cancelada.");
         }
         Consola.pausa();
     }
@@ -142,10 +142,10 @@ public class MenuInsumos {
     private void menuBusqueda() throws ValidacionException {
         Consola.titulo("BUSCAR INSUMO");
         System.out.println("1. Por nombre");
-        System.out.println("2. Por categoria");
+        System.out.println("2. Por categoría");
         System.out.println("3. Por estado (vigente / por caducar / caducado)");
         System.out.println("0. Volver");
-        int op = Consola.leerEntero("Seleccione una opcion: ");
+        int op = Consola.leerEntero("Seleccione una opción: ");
 
         List<Insumo> resultado;
         switch (op) {
@@ -154,18 +154,18 @@ public class MenuInsumos {
                 break;
             case 2:
                 mostrarCategoriasCortas();
-                resultado = insumoService.buscarPorCategoria(Consola.leerEntero("ID de la categoria: "));
+                resultado = insumoService.buscarPorCategoria(Consola.leerEntero("ID de la categoría: "));
                 break;
             case 3:
                 System.out.println("1. Vigente  2. Por caducar  3. Caducado");
                 int e = Consola.leerEntero("Estado: ");
-                if (e < 1 || e > 3) throw new ValidacionException("Estado no valido.");
+                if (e < 1 || e > 3) throw new ValidacionException("Estado no válido.");
                 resultado = insumoService.buscarPorEstado(EstadoInsumo.values()[e - 1]);
                 break;
             case 0:
                 return;
             default:
-                System.out.println("Opcion no valida.");
+                System.out.println("Opción no válida.");
                 return;
         }
         System.out.println("\nResultados encontrados: " + resultado.size());
@@ -178,13 +178,13 @@ public class MenuInsumos {
     private void menuCategorias() {
         int op;
         do {
-            Consola.titulo("GESTION DE CATEGORIAS");
-            System.out.println("1. Listar categorias");
-            System.out.println("2. Crear categoria");
-            System.out.println("3. Modificar categoria");
-            System.out.println("4. Eliminar categoria");
+            Consola.titulo("GESTIÓN DE CATEGORÍAS");
+            System.out.println("1. Listar categorías");
+            System.out.println("2. Crear categoría");
+            System.out.println("3. Modificar categoría");
+            System.out.println("4. Eliminar categoría");
             System.out.println("0. Volver");
-            op = Consola.leerEntero("Seleccione una opcion: ");
+            op = Consola.leerEntero("Seleccione una opción: ");
             try {
                 switch (op) {
                     case 1:
@@ -193,36 +193,36 @@ public class MenuInsumos {
                         break;
                     case 2: {
                         String nombre = Consola.leerTexto("Nombre: ");
-                        String desc = Consola.leerTexto("Descripcion (opcional): ");
+                        String desc = Consola.leerTexto("Descripción (opcional): ");
                         categoriaService.crear(nombre, desc);
-                        System.out.println("Categoria creada.");
+                        System.out.println("Categoría creada.");
                         Consola.pausa();
                         break;
                     }
                     case 3: {
                         listarCategorias();
-                        int id = Consola.leerEntero("ID de la categoria: ");
+                        int id = Consola.leerEntero("ID de la categoría: ");
                         Categoria c = categoriaService.buscarPorId(id);
                         String nombre = pedir("Nombre", c.getNombre());
-                        String desc = pedir("Descripcion", c.getDescripcion());
+                        String desc = pedir("Descripción", c.getDescripcion());
                         categoriaService.modificar(id, nombre, desc);
-                        System.out.println("Categoria actualizada.");
+                        System.out.println("Categoría actualizada.");
                         Consola.pausa();
                         break;
                     }
                     case 4: {
                         listarCategorias();
-                        int id = Consola.leerEntero("ID de la categoria: ");
+                        int id = Consola.leerEntero("ID de la categoría: ");
                         Categoria c = categoriaService.buscarPorId(id);
-                        if (Consola.confirmar("Eliminar la categoria '" + c.getNombre() + "'?")) {
+                        if (Consola.confirmar("¿Eliminar la categoría '" + c.getNombre() + "'?")) {
                             categoriaService.eliminar(id);
-                            System.out.println("Categoria eliminada.");
+                            System.out.println("Categoría eliminada.");
                         }
                         Consola.pausa();
                         break;
                     }
                     case 0: break;
-                    default: System.out.println("Opcion no valida.");
+                    default: System.out.println("Opción no válida.");
                 }
             } catch (ValidacionException e) {
                 System.out.println("  ERROR: " + e.getMessage());
@@ -240,11 +240,11 @@ public class MenuInsumos {
                     categoriaService.contarInsumos(c.getId()),
                     c.getDescripcion() == null ? "" : c.getDescripcion()));
         }
-        if (lista.isEmpty()) System.out.println("(No hay categorias registradas)");
+        if (lista.isEmpty()) System.out.println("(No hay categorías registradas)");
     }
 
     private void mostrarCategoriasCortas() {
-        StringBuilder sb = new StringBuilder("Categorias: ");
+        StringBuilder sb = new StringBuilder("Categorías: ");
         for (Categoria c : categoriaService.listar()) {
             sb.append(c.getId()).append("=").append(c.getNombre()).append("  ");
         }
@@ -256,14 +256,14 @@ public class MenuInsumos {
     private void menuCaducidad() {
         int op;
         do {
-            Consola.titulo("GESTION DE FECHAS DE CADUCIDAD");
-            System.out.println("Dias de aviso actuales: " + insumoService.getDiasAviso());
+            Consola.titulo("GESTIÓN DE FECHAS DE CADUCIDAD");
+            System.out.println("Días de aviso actuales: " + insumoService.getDiasAviso());
             System.out.println("1. Ver reporte de caducidad");
             System.out.println("2. Actualizar fecha de caducidad de un insumo");
-            System.out.println("3. Cambiar dias de aviso");
+            System.out.println("3. Cambiar días de aviso");
             System.out.println("4. Eliminar todos los insumos caducados");
             System.out.println("0. Volver");
-            op = Consola.leerEntero("Seleccione una opcion: ");
+            op = Consola.leerEntero("Seleccione una opción: ");
             try {
                 switch (op) {
                     case 1:
@@ -281,8 +281,8 @@ public class MenuInsumos {
                         break;
                     }
                     case 3:
-                        insumoService.setDiasAviso(Consola.leerEntero("Avisar con cuantos dias de anticipacion: "));
-                        System.out.println("Configuracion guardada.");
+                        insumoService.setDiasAviso(Consola.leerEntero("Avisar con cuantos días de anticipación: "));
+                        System.out.println("Configuración guardada.");
                         Consola.pausa();
                         break;
                     case 4: {
@@ -291,7 +291,7 @@ public class MenuInsumos {
                             System.out.println("No hay insumos caducados.");
                         } else {
                             imprimirTabla(caducados);
-                            if (Consola.confirmar("Eliminar estos " + caducados.size() + " insumos?")) {
+                            if (Consola.confirmar("¿Eliminar estos " + caducados.size() + " insumos?")) {
                                 System.out.println("Se eliminaron " + insumoService.eliminarCaducados() + " insumos.");
                             }
                         }
@@ -299,7 +299,7 @@ public class MenuInsumos {
                         break;
                     }
                     case 0: break;
-                    default: System.out.println("Opcion no valida.");
+                    default: System.out.println("Opción no válida.");
                 }
             } catch (ValidacionException e) {
                 System.out.println("  ERROR: " + e.getMessage());
@@ -319,7 +319,7 @@ public class MenuInsumos {
 
         if (caducados.isEmpty() && porCaducar.isEmpty()) {
             if (siempreMostrar) {
-                System.out.println("\nTodo en orden: ningun insumo vence en los proximos " + dias + " dias.");
+                System.out.println("\nTodo en orden: ningún insumo vence en los próximos " + dias + " días.");
             }
             return;
         }
@@ -335,7 +335,7 @@ public class MenuInsumos {
             }
         }
         if (!porCaducar.isEmpty()) {
-            System.out.println("\nPOR CADUCAR en los proximos " + dias + " dias (" + porCaducar.size() + "):");
+            System.out.println("\nPOR CADUCAR en los próximos " + dias + " días (" + porCaducar.size() + "):");
             for (Insumo i : porCaducar) {
                 System.out.println("  - " + i.getNombre() + " | " + i.getFechaFormateada() + " | " + i.textoDias());
             }
@@ -369,9 +369,9 @@ public class MenuInsumos {
     private void avisarSiCorresponde(Insumo i) {
         EstadoInsumo estado = i.getEstado(insumoService.getDiasAviso());
         if (estado == EstadoInsumo.CADUCADO) {
-            System.out.println("  !! Atencion: este insumo ya esta CADUCADO.");
+            System.out.println("  !! Atención: este insumo ya está CADUCADO.");
         } else if (estado == EstadoInsumo.POR_CADUCAR) {
-            System.out.println("  !! Atencion: este insumo esta proximo a caducar.");
+            System.out.println("  !! Atención: este insumo está próximo a caducar.");
         }
     }
 

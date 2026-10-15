@@ -21,7 +21,7 @@ public class Consola {
             try {
                 return Integer.parseInt(entrada);
             } catch (NumberFormatException e) {
-                System.out.println("  Debe ingresar un numero valido.");
+                System.out.println("  Debe ingresar un número válido.");
             }
         }
     }

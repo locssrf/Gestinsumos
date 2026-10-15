@@ -24,11 +24,11 @@ public class MenuPrincipal {
     public void iniciar() {
         int opcion;
         do {
-            Consola.titulo("SISTEMA DE GESTION DE INSUMOS");
-            System.out.println("1. Iniciar sesion");
-            System.out.println("2. Olvide mi contrasena");
+            Consola.titulo("SISTEMA DE GESTIÓN DE INSUMOS");
+            System.out.println("1. Iniciar sesión");
+            System.out.println("2. Olvidé mi contraseña");
             System.out.println("0. Salir");
-            opcion = Consola.leerEntero("Seleccione una opcion: ");
+            opcion = Consola.leerEntero("Seleccione una opción: ");
 
             switch (opcion) {
                 case 1:
@@ -41,7 +41,7 @@ public class MenuPrincipal {
                     System.out.println("Hasta pronto.");
                     break;
                 default:
-                    System.out.println("Opcion no valida.");
+                    System.out.println("Opción no válida.");
             }
         } while (opcion != 0);
     }
@@ -49,10 +49,10 @@ public class MenuPrincipal {
     // ================== GES-21: INICIAR SESION ==================
 
     private void iniciarSesion() {
-        Consola.titulo("INICIAR SESION");
+        Consola.titulo("INICIAR SESIÓN");
         for (int intento = 1; intento <= MAX_INTENTOS; intento++) {
             String username = Consola.leerTexto("Usuario: ");
-            String password = Consola.leerTexto("Contrasena: ");
+            String password = Consola.leerTexto("Contraseña: ");
             try {
                 auth.iniciarSesion(username, password);
                 System.out.println("\nBienvenido, " + auth.getUsuarioActual().getNombre()
@@ -66,22 +66,22 @@ public class MenuPrincipal {
                         + " Intentos restantes: " + (MAX_INTENTOS - intento));
             }
         }
-        System.out.println("Demasiados intentos fallidos. Use la opcion 'Olvide mi contrasena'.");
+        System.out.println("Demasiados intentos fallidos. Use la opción 'Olvidé mi contraseña'.");
     }
 
     // ================== GES-23: RECUPERAR CONTRASENA ==================
 
     private void recuperarPassword() {
-        Consola.titulo("RECUPERAR CONTRASENA");
+        Consola.titulo("RECUPERAR CONTRASEÑA");
         String username = Consola.leerTexto("Ingrese su usuario: ");
         try {
             String pregunta = auth.obtenerPreguntaSeguridad(username);
             System.out.println("Pregunta de seguridad: " + pregunta);
             String respuesta = Consola.leerTexto("Respuesta: ");
-            String nueva = Consola.leerTexto("Nueva contrasena: ");
-            String confirmacion = Consola.leerTexto("Confirme la contrasena: ");
+            String nueva = Consola.leerTexto("Nueva contraseña: ");
+            String confirmacion = Consola.leerTexto("Confirme la contraseña: ");
             auth.recuperarPassword(username, respuesta, nueva, confirmacion);
-            System.out.println("Contrasena actualizada. Ya puede iniciar sesion.");
+            System.out.println("Contraseña actualizada. Ya puede iniciar sesión.");
         } catch (ValidacionException e) {
             System.out.println("  " + e.getMessage());
         }
@@ -96,16 +96,16 @@ public class MenuPrincipal {
             Consola.titulo("MENU PRINCIPAL - " + u.getUsername() + " [" + u.getRol().getDescripcion() + "]");
             System.out.println("1. Ver mi perfil");
             System.out.println("2. Editar mi perfil");
-            System.out.println("3. Cambiar contrasena");
+            System.out.println("3. Cambiar contraseña");
             System.out.println("4. Cambiar pregunta de seguridad");
             System.out.println("5. Modulo de insumos");
             // Polimorfismo: la opcion solo aparece si el objeto es Administrador
             if (u.puedeGestionarUsuarios()) {
-                System.out.println("6. Gestion de usuarios y roles");
+                System.out.println("6. Gestión de usuarios y roles");
             }
-            System.out.println("0. Cerrar sesion");
+            System.out.println("0. Cerrar sesión");
 
-            int opcion = Consola.leerEntero("Seleccione una opcion: ");
+            int opcion = Consola.leerEntero("Seleccione una opción: ");
             switch (opcion) {
                 case 1: verPerfil(); break;
                 case 2: editarPerfil(); break;
@@ -118,14 +118,14 @@ public class MenuPrincipal {
                     if (u.puedeGestionarUsuarios()) {
                         menuAdministracion();
                     } else {
-                        System.out.println("Opcion no valida.");
+                        System.out.println("Opción no válida.");
                     }
                     break;
                 case 0:
                     cerrarSesion();
                     break;
                 default:
-                    System.out.println("Opcion no valida.");
+                    System.out.println("Opción no válida.");
             }
         }
     }
@@ -133,9 +133,9 @@ public class MenuPrincipal {
     // ================== GES-7: CERRAR SESION ==================
 
     private void cerrarSesion() {
-        if (Consola.confirmar("Seguro que desea cerrar sesion?")) {
+        if (Consola.confirmar("¿Seguro que desea cerrar sesión?")) {
             auth.cerrarSesion();
-            System.out.println("Sesion cerrada correctamente.");
+            System.out.println("Sesión cerrada correctamente.");
         }
     }
 
@@ -147,7 +147,7 @@ public class MenuPrincipal {
         System.out.println("Usuario   : " + u.getUsername());
         System.out.println("Nombre    : " + u.getNombre());
         System.out.println("Correo    : " + valorOVacio(u.getEmail()));
-        System.out.println("Telefono  : " + valorOVacio(u.getTelefono()));
+        System.out.println("Teléfono  : " + valorOVacio(u.getTelefono()));
         System.out.println("Rol       : " + u.getRol().getDescripcion());
         System.out.println("Pregunta  : " + u.getPreguntaSeguridad());
         Consola.pausa();
@@ -160,7 +160,7 @@ public class MenuPrincipal {
 
         String nombre = pedirConValorActual("Nombre", u.getNombre());
         String email = pedirConValorActual("Correo", u.getEmail());
-        String telefono = pedirConValorActual("Telefono", u.getTelefono());
+        String telefono = pedirConValorActual("Teléfono", u.getTelefono());
 
         try {
             usuarioService.actualizarPerfil(nombre, email, telefono);
@@ -172,13 +172,13 @@ public class MenuPrincipal {
     }
 
     private void cambiarPassword() {
-        Consola.titulo("CAMBIAR CONTRASENA");
-        String actual = Consola.leerTexto("Contrasena actual: ");
-        String nueva = Consola.leerTexto("Nueva contrasena: ");
-        String confirmacion = Consola.leerTexto("Confirme la nueva contrasena: ");
+        Consola.titulo("CAMBIAR CONTRASEÑA");
+        String actual = Consola.leerTexto("Contraseña actual: ");
+        String nueva = Consola.leerTexto("Nueva contraseña: ");
+        String confirmacion = Consola.leerTexto("Confirme la nueva contraseña: ");
         try {
             usuarioService.cambiarPassword(actual, nueva, confirmacion);
-            System.out.println("Contrasena cambiada correctamente.");
+            System.out.println("Contraseña cambiada correctamente.");
         } catch (ValidacionException e) {
             System.out.println("  " + e.getMessage());
         }
@@ -203,13 +203,13 @@ public class MenuPrincipal {
     private void menuAdministracion() {
         int opcion;
         do {
-            Consola.titulo("GESTION DE USUARIOS Y ROLES");
+            Consola.titulo("GESTIÓN DE USUARIOS Y ROLES");
             System.out.println("1. Listar usuarios");
             System.out.println("2. Registrar nuevo usuario");
             System.out.println("3. Cambiar rol de un usuario");
             System.out.println("4. Activar / desactivar usuario");
             System.out.println("0. Volver");
-            opcion = Consola.leerEntero("Seleccione una opcion: ");
+            opcion = Consola.leerEntero("Seleccione una opción: ");
 
             try {
                 switch (opcion) {
@@ -218,7 +218,7 @@ public class MenuPrincipal {
                     case 3: cambiarRol(); break;
                     case 4: cambiarEstado(); break;
                     case 0: break;
-                    default: System.out.println("Opcion no valida.");
+                    default: System.out.println("Opción no válida.");
                 }
             } catch (ValidacionException e) {
                 System.out.println("  " + e.getMessage());
@@ -241,7 +241,7 @@ public class MenuPrincipal {
     private void registrarUsuario() throws ValidacionException {
         Consola.titulo("REGISTRAR USUARIO");
         String username = Consola.leerTexto("Nombre de usuario: ");
-        String password = Consola.leerTexto("Contrasena: ");
+        String password = Consola.leerTexto("Contraseña: ");
         String nombre = Consola.leerTexto("Nombre completo: ");
         Rol rol = pedirRol();
         String pregunta = Consola.leerTexto("Pregunta de seguridad: ");
@@ -262,7 +262,7 @@ public class MenuPrincipal {
 
     private void cambiarEstado() throws ValidacionException {
         int id = Consola.leerEntero("ID del usuario: ");
-        boolean activar = Consola.confirmar("Desea ACTIVAR la cuenta? (n = desactivar)");
+        boolean activar = Consola.confirmar("¿Desea ACTIVAR la cuenta? (n = desactivar)");
         usuarioService.cambiarEstado(id, activar);
         System.out.println("Cuenta " + (activar ? "activada." : "desactivada."));
         Consola.pausa();
@@ -276,7 +276,7 @@ public class MenuPrincipal {
             int op = Consola.leerEntero("Seleccione el rol: ");
             if (op == 1) return Rol.ADMIN;
             if (op == 2) return Rol.EMPLEADO;
-            System.out.println("Rol no valido.");
+            System.out.println("Rol no válido.");
         }
     }
 

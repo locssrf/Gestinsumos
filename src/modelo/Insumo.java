@@ -50,12 +50,12 @@ public class Insumo {
         return EstadoInsumo.VIGENTE;
     }
 
-    /** Texto amigable: "Vence hoy", "Faltan 3 dias", "Vencio hace 2 dias". */
+    /** Texto amigable: "Vence hoy", "Faltan 3 días", "Venció hace 2 días". */
     public String textoDias() {
         long d = diasParaCaducar();
         if (d == 0) return "Vence hoy";
-        if (d > 0) return "Faltan " + d + (d == 1 ? " dia" : " dias");
-        return "Vencio hace " + (-d) + (d == -1 ? " dia" : " dias");
+        if (d > 0) return "Faltan " + d + (d == 1 ? " día" : " días");
+        return "Venció hace " + (-d) + (d == -1 ? " día" : " días");
     }
 
     public String getFechaFormateada() {

@@ -26,7 +26,7 @@ public class CategoriaService {
     public Categoria buscarPorId(int id) throws ValidacionException {
         Categoria c = categoriaDAO.buscarPorId(id);
         if (c == null) {
-            throw new ValidacionException("No existe una categoria con ID " + id + ".");
+            throw new ValidacionException("No existe una categoría con ID " + id + ".");
         }
         return c;
     }
@@ -40,7 +40,7 @@ public class CategoriaService {
         validarNombre(nombre, 0);
         Categoria c = new Categoria(0, nombre.trim(), descripcion == null ? "" : descripcion.trim());
         if (!categoriaDAO.insertar(c)) {
-            throw new ValidacionException("No se pudo registrar la categoria.");
+            throw new ValidacionException("No se pudo registrar la categoría.");
         }
     }
 
@@ -60,7 +60,7 @@ public class CategoriaService {
         int cantidad = categoriaDAO.contarInsumos(id);
         if (cantidad > 0) {
             throw new ValidacionException("No se puede eliminar '" + c.getNombre() + "': tiene "
-                    + cantidad + " insumo(s) asociados. Muevalos a otra categoria primero.");
+                    + cantidad + " insumo(s) asociados. Muévalos a otra categoría primero.");
         }
         categoriaDAO.eliminar(id);
     }
@@ -69,21 +69,21 @@ public class CategoriaService {
 
     private void validarNombre(String nombre, int idActual) throws ValidacionException {
         if (Validaciones.estaVacio(nombre)) {
-            throw new ValidacionException("El nombre de la categoria es obligatorio.");
+            throw new ValidacionException("El nombre de la categoría es obligatorio.");
         }
         if (nombre.trim().length() < 3 || nombre.trim().length() > 30) {
             throw new ValidacionException("El nombre debe tener entre 3 y 30 caracteres.");
         }
         Categoria existente = categoriaDAO.buscarPorNombre(nombre);
         if (existente != null && existente.getId() != idActual) {
-            throw new ValidacionException("Ya existe una categoria llamada '" + existente.getNombre() + "'.");
+            throw new ValidacionException("Ya existe una categoría llamada '" + existente.getNombre() + "'.");
         }
     }
 
     private void verificarPermiso() throws ValidacionException {
         Usuario u = auth.getUsuarioActual();
         if (u == null || !u.puedeModificarInsumos()) {
-            throw new ValidacionException("Acceso denegado: solo un administrador puede gestionar categorias.");
+            throw new ValidacionException("Acceso denegado: solo un administrador puede gestionar categorías.");
         }
     }
 }

@@ -1,0 +1,21 @@
+# Servicio de systemd para que la aplicacion arranque sola en el servidor (AWS EC2)
+# y se reinicie si se cae o si se reinicia la maquina.
+# Copiar a: /etc/systemd/system/gestion-insumos.service
+
+[Unit]
+Description=Sistema de Gestion de Insumos
+After=network.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=/opt/gestion-insumos
+Environment=PORT=80
+Environment=DB_PATH=/opt/gestion-insumos/datos/gestion_insumos.db
+ExecStart=/usr/bin/java -Xmx256m -jar /opt/gestion-insumos/GestionInsumos.jar
+# Permite usar el puerto 80 sin ejecutar como root
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

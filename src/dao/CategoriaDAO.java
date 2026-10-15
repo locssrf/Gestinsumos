@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.text.Collator;
 import java.util.List;
+import java.util.Locale;
 
 /** Acceso a la tabla "categorias" (GES-24). */
 public class CategoriaDAO {
@@ -20,7 +22,7 @@ public class CategoriaDAO {
             ps.setString(2, c.getDescripcion());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error al registrar categoria: " + e.getMessage());
+            System.out.println("Error al registrar categoría: " + e.getMessage());
             return false;
         }
     }
@@ -33,7 +35,7 @@ public class CategoriaDAO {
             ps.setInt(3, c.getId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error al actualizar categoria: " + e.getMessage());
+            System.out.println("Error al actualizar categoría: " + e.getMessage());
             return false;
         }
     }
@@ -44,7 +46,7 @@ public class CategoriaDAO {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error al eliminar categoria: " + e.getMessage());
+            System.out.println("Error al eliminar categoría: " + e.getMessage());
             return false;
         }
     }
@@ -57,7 +59,7 @@ public class CategoriaDAO {
                 if (rs.next()) return mapear(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Error al buscar categoria: " + e.getMessage());
+            System.out.println("Error al buscar categoría: " + e.getMessage());
         }
         return null;
     }
@@ -71,7 +73,7 @@ public class CategoriaDAO {
                 if (rs.next()) return mapear(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Error al buscar categoria: " + e.getMessage());
+            System.out.println("Error al buscar categoría: " + e.getMessage());
         }
         return null;
     }
@@ -84,8 +86,12 @@ public class CategoriaDAO {
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) lista.add(mapear(rs));
         } catch (SQLException e) {
-            System.out.println("Error al listar categorias: " + e.getMessage());
+            System.out.println("Error al listar categorías: " + e.getMessage());
         }
+        // Orden alfabetico en espanol (SQLite pondria "Lacteos" con tilde despues de "Limpieza")
+        Collator espanol = Collator.getInstance(Locale.forLanguageTag("es-CO"));
+        espanol.setStrength(Collator.PRIMARY);
+        lista.sort((a, b) -> espanol.compare(a.getNombre(), b.getNombre()));
         return lista;
     }
 

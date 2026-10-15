@@ -19,17 +19,17 @@ public class AuthService {
 
     public void iniciarSesion(String username, String password) throws ValidacionException {
         if (Validaciones.estaVacio(username) || Validaciones.estaVacio(password)) {
-            throw new ValidacionException("Debe ingresar usuario y contrasena.");
+            throw new ValidacionException("Debe ingresar usuario y contraseña.");
         }
 
         Usuario u = usuarioDAO.buscarPorUsername(username);
 
         // Mismo mensaje en ambos casos para no revelar si el usuario existe
         if (u == null || !u.getPasswordHash().equals(Seguridad.hash(password))) {
-            throw new ValidacionException("Usuario o contrasena incorrectos.");
+            throw new ValidacionException("Usuario o contraseña incorrectos.");
         }
         if (!u.isActivo()) {
-            throw new ValidacionException("Su cuenta esta desactivada. Contacte al administrador.");
+            throw new ValidacionException("Su cuenta está desactivada. Contacte al administrador.");
         }
         usuarioActual = u;
     }
@@ -73,10 +73,10 @@ public class AuthService {
             throw new ValidacionException("La respuesta de seguridad es incorrecta.");
         }
         if (!Validaciones.passwordValida(nueva)) {
-            throw new ValidacionException("La contrasena debe tener al menos 6 caracteres.");
+            throw new ValidacionException("La contraseña debe tener al menos 6 caracteres.");
         }
         if (!nueva.equals(confirmacion)) {
-            throw new ValidacionException("Las contrasenas no coinciden.");
+            throw new ValidacionException("Las contraseñas no coinciden.");
         }
         usuarioDAO.actualizarPassword(u.getId(), Seguridad.hash(nueva));
     }

@@ -32,10 +32,10 @@ public class UsuarioService {
             throw new ValidacionException("El nombre no puede estar vacio.");
         }
         if (!Validaciones.estaVacio(email) && !Validaciones.emailValido(email)) {
-            throw new ValidacionException("El correo no tiene un formato valido.");
+            throw new ValidacionException("El correo no tiene un formato válido.");
         }
         if (!Validaciones.estaVacio(telefono) && !Validaciones.telefonoValido(telefono)) {
-            throw new ValidacionException("El telefono debe tener entre 7 y 10 digitos.");
+            throw new ValidacionException("El teléfono debe tener entre 7 y 10 dígitos.");
         }
 
         u.setNombre(nombre);
@@ -48,13 +48,13 @@ public class UsuarioService {
     public void cambiarPassword(String actual, String nueva, String confirmacion) throws ValidacionException {
         Usuario u = auth.getUsuarioActual();
         if (!u.getPasswordHash().equals(Seguridad.hash(actual))) {
-            throw new ValidacionException("La contrasena actual es incorrecta.");
+            throw new ValidacionException("La contraseña actual es incorrecta.");
         }
         if (!Validaciones.passwordValida(nueva)) {
-            throw new ValidacionException("La nueva contrasena debe tener al menos 6 caracteres.");
+            throw new ValidacionException("La nueva contraseña debe tener al menos 6 caracteres.");
         }
         if (!nueva.equals(confirmacion)) {
-            throw new ValidacionException("Las contrasenas no coinciden.");
+            throw new ValidacionException("Las contraseñas no coinciden.");
         }
         usuarioDAO.actualizarPassword(u.getId(), Seguridad.hash(nueva));
         auth.refrescarUsuarioActual();
@@ -89,13 +89,13 @@ public class UsuarioService {
         verificarPermisoAdmin();
 
         if (!Validaciones.usernameValido(username)) {
-            throw new ValidacionException("El usuario debe tener de 4 a 20 caracteres (letras, numeros o _).");
+            throw new ValidacionException("El usuario debe tener de 4 a 20 caracteres (letras, números o _).");
         }
         if (usuarioDAO.existeUsername(username)) {
             throw new ValidacionException("Ese nombre de usuario ya existe.");
         }
         if (!Validaciones.passwordValida(password)) {
-            throw new ValidacionException("La contrasena debe tener al menos 6 caracteres.");
+            throw new ValidacionException("La contraseña debe tener al menos 6 caracteres.");
         }
         if (Validaciones.estaVacio(nombre)) {
             throw new ValidacionException("El nombre es obligatorio.");

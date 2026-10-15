@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Insumos</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f6f5c'/><path d='M9 11h14v12a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2z M8 8h16v3H8z' fill='white'/></svg>">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<!-- =========================================================
+     PANTALLA: INICIAR SESIÓN (GES-21)
+     ========================================================= -->
+<section id="vista-login" class="pantalla-acceso oculto">
+  <div class="tarjeta-acceso">
+    <div class="marca">
+      <span class="marca-icono">▣</span>
+      <div>
+        <h1>Gestión de Insumos</h1>
+        <p class="texto-suave">Inventario y control de caducidad</p>
+      </div>
+    </div>
+
+    <form id="form-login" class="formulario" autocomplete="on">
+      <label>Usuario
+        <input name="username" required autocomplete="username" autofocus>
+      </label>
+      <label>Contraseña
+        <input name="password" type="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="boton boton-principal boton-ancho">Iniciar sesión</button>
+    </form>
+    <button type="button" class="enlace" data-ir="vista-recuperar">¿Olvidaste tu contraseña?</button>
+  </div>
+</section>
+
+<!-- =========================================================
+     PANTALLA: RECUPERAR CONTRASEÑA (GES-23)
+     ========================================================= -->
+<section id="vista-recuperar" class="pantalla-acceso oculto">
+  <div class="tarjeta-acceso">
+    <h1>Recuperar contraseña</h1>
+    <p class="texto-suave">Responde tu pregunta de seguridad para crear una contraseña nueva.</p>
+
+    <form id="form-recuperar-1" class="formulario">
+      <label>Usuario
+        <input name="username" required>
+      </label>
+      <button type="submit" class="boton boton-principal boton-ancho">Continuar</button>
+    </form>
+
+    <form id="form-recuperar-2" class="formulario oculto">
+      <p class="pregunta-seguridad" id="texto-pregunta"></p>
+      <label>Respuesta
+        <input name="respuesta" required>
+      </label>
+      <label>Nueva contraseña
+        <input name="nueva" type="password" required minlength="6" autocomplete="new-password">
+      </label>
+      <label>Confirmar contraseña
+        <input name="confirmacion" type="password" required minlength="6" autocomplete="new-password">
+      </label>
+      <button type="submit" class="boton boton-principal boton-ancho">Cambiar contraseña</button>
+    </form>
+    <button type="button" class="enlace" data-ir="vista-login">← Volver al inicio de sesión</button>
+  </div>
+</section>
+
+<!-- =========================================================
+     APLICACIÓN (después de iniciar sesión)
+     ========================================================= -->
+<div id="vista-app" class="oculto">
+  <header class="barra-superior">
+    <div class="marca marca-pequena">
+      <span class="marca-icono">▣</span>
+      <strong>Gestión de Insumos</strong>
+    </div>
+    <div class="usuario-actual">
+      <span id="nombre-usuario"></span>
+      <span id="rol-usuario" class="etiqueta"></span>
+      <button id="boton-salir" class="boton boton-secundario boton-pequeno">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <nav class="menu" id="menu">
+    <button data-seccion="inicio" class="activo">Inicio</button>
+    <button data-seccion="insumos">Insumos</button>
+    <button data-seccion="categorias" class="solo-admin">Categorías</button>
+    <button data-seccion="caducidad" class="solo-admin">Caducidad</button>
+    <button data-seccion="usuarios" class="solo-admin">Usuarios</button>
+    <button data-seccion="perfil">Mi perfil</button>
+  </nav>
+
+  <main class="contenido">
+
+    <!-- ---------- INICIO: resumen y alertas (GES-2) ---------- -->
+    <section id="seccion-inicio" class="seccion">
+      <h2>Resumen del inventario</h2>
+      <div class="tarjetas-resumen">
+        <div class="tarjeta-dato"><span class="dato" id="r-total">0</span><span>Insumos</span></div>
+        <div class="tarjeta-dato estado-VIGENTE"><span class="dato" id="r-vigentes">0</span><span>Vigentes</span></div>
+        <div class="tarjeta-dato estado-POR_CADUCAR"><span class="dato" id="r-por-caducar">0</span><span>Por caducar</span></div>
+        <div class="tarjeta-dato estado-CADUCADO"><span class="dato" id="r-caducados">0</span><span>Caducados</span></div>
+      </div>
+
+      <h2>Alertas de caducidad</h2>
+      <p class="texto-suave">Se avisa con <strong id="r-dias">7</strong> días de anticipación.</p>
+      <div id="alertas"></div>
+    </section>
+
+    <!-- ---------- INSUMOS: listado, búsqueda y CRUD (GES-4, GES-3) ---------- -->
+    <section id="seccion-insumos" class="seccion oculto">
+      <div class="encabezado-seccion">
+        <h2>Insumos</h2>
+        <button id="boton-nuevo-insumo" class="boton boton-principal solo-admin">+ Nuevo insumo</button>
+      </div>
+
+      <form id="form-busqueda" class="filtros">
+        <input name="nombre" placeholder="Buscar por nombre…" aria-label="Buscar por nombre">
+        <select name="categoria" aria-label="Categoría" class="select-categorias">
+          <option value="">Todas las categorías</option>
+        </select>
+        <select name="estado" aria-label="Estado">
+          <option value="">Todos los estados</option>
+          <option value="VIGENTE">Vigente</option>
+          <option value="POR_CADUCAR">Por caducar</option>
+          <option value="CADUCADO">Caducado</option>
+        </select>
+        <button type="submit" class="boton boton-secundario">Buscar</button>
+        <button type="reset" class="boton boton-texto">Limpiar</button>
+      </form>
+
+      <p class="texto-suave" id="conteo-insumos"></p>
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Nombre</th><th>Categoría</th><th class="num">Cantidad</th>
+              <th>Caduca</th><th>Tiempo</th><th>Estado</th><th class="solo-admin"></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-insumos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CATEGORÍAS (GES-24) ---------- -->
+    <section id="seccion-categorias" class="seccion oculto">
+      <h2>Categorías</h2>
+      <form id="form-categoria" class="formulario formulario-linea">
+        <input type="hidden" name="id">
+        <label>Nombre <input name="nombre" required minlength="3" maxlength="30"></label>
+        <label>Descripción <input name="descripcion" maxlength="100"></label>
+        <button type="submit" class="boton boton-principal" id="boton-guardar-categoria">Crear categoría</button>
+        <button type="button" class="boton boton-texto oculto" id="boton-cancelar-categoria">Cancelar</button>
+      </form>
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Nombre</th><th>Descripción</th><th class="num">Insumos</th><th></th></tr></thead>
+          <tbody id="tabla-categorias"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CADUCIDAD (GES-2) ---------- -->
+    <section id="seccion-caducidad" class="seccion oculto">
+      <h2>Gestión de fechas de caducidad</h2>
+      <div class="rejilla-2">
+        <div class="panel">
+          <h3>Días de aviso</h3>
+          <p class="texto-suave">Con cuántos días de anticipación se considera que un insumo está "por caducar".</p>
+          <form id="form-dias" class="formulario formulario-linea">
+            <label>Días <input name="dias" type="number" min="1" max="365" required></label>
+            <button type="submit" class="boton boton-principal">Guardar</button>
+          </form>
+        </div>
+        <div class="panel">
+          <h3>Actualizar fecha de un insumo</h3>
+          <p class="texto-suave">Por ejemplo, cuando llega un lote nuevo del mismo insumo.</p>
+          <form id="form-fecha" class="formulario formulario-linea">
+            <label>Insumo <select name="id" id="select-insumo-fecha" required></select></label>
+            <label>Nueva fecha <input name="fecha" type="date" required></label>
+            <button type="submit" class="boton boton-principal">Actualizar</button>
+          </form>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="encabezado-seccion">
+          <h3>Insumos caducados</h3>
+          <button id="boton-eliminar-caducados" class="boton boton-peligro">Eliminar todos los caducados</button>
+        </div>
+        <div id="lista-caducados"></div>
+      </div>
+    </section>
+
+    <!-- ---------- USUARIOS Y ROLES (GES-22) ---------- -->
+    <section id="seccion-usuarios" class="seccion oculto">
+      <h2>Usuarios y roles</h2>
+      <details class="panel">
+        <summary><strong>+ Registrar nuevo usuario</strong></summary>
+        <form id="form-usuario" class="formulario rejilla-2">
+          <label>Usuario <input name="username" required pattern="[A-Za-z0-9_]{4,20}" title="4 a 20 letras, números o _"></label>
+          <label>Nombre completo <input name="nombre" required></label>
+          <label>Contraseña <input name="password" type="password" required minlength="6" autocomplete="new-password"></label>
+          <label>Rol
+            <select name="rol"><option value="EMPLEADO">Empleado</option><option value="ADMIN">Administrador</option></select>
+          </label>
+          <label>Pregunta de seguridad <input name="pregunta" required></label>
+          <label>Respuesta <input name="respuesta" required></label>
+          <div><button type="submit" class="boton boton-principal">Registrar</button></div>
+        </form>
+      </details>
+      <div class="tabla-contenedor">
+        <table class="tabla">
+          <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="tabla-usuarios"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- PERFIL (GES-14) ---------- -->
+    <section id="seccion-perfil" class="seccion oculto">
+      <h2>Mi perfil</h2>
+      <div class="rejilla-2">
+        <form id="form-perfil" class="panel formulario">
+          <h3>Datos personales</h3>
+          <label>Usuario <input name="username" disabled></label>
+          <label>Nombre <input name="nombre" required></label>
+          <label>Correo <input name="email" type="email"></label>
+          <label>Teléfono <input name="telefono" inputmode="numeric" pattern="[0-9]{7,10}" title="7 a 10 dígitos"></label>
+          <button type="submit" class="boton boton-principal">Guardar cambios</button>
+        </form>
+        <div>
+          <form id="form-password" class="panel formulario">
+            <h3>Cambiar contraseña</h3>
+            <label>Contraseña actual <input name="actual" type="password" required autocomplete="current-password"></label>
+            <label>Nueva contraseña <input name="nueva" type="password" required minlength="6" autocomplete="new-password"></label>
+            <label>Confirmar <input name="confirmacion" type="password" required minlength="6" autocomplete="new-password"></label>
+            <button type="submit" class="boton boton-principal">Cambiar contraseña</button>
+          </form>
+          <form id="form-pregunta" class="panel formulario">
+            <h3>Pregunta de seguridad</h3>
+            <label>Pregunta <input name="pregunta" required></label>
+            <label>Respuesta <input name="respuesta" required></label>
+            <button type="submit" class="boton boton-principal">Guardar pregunta</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- =========================================================
+     VENTANA: REGISTRAR / MODIFICAR INSUMO (GES-4, GES-25)
+     ========================================================= -->
+<dialog id="dialogo-insumo" class="dialogo">
+  <form id="form-insumo" class="formulario" method="dialog">
+    <h2 id="titulo-dialogo-insumo">Nuevo insumo</h2>
+    <input type="hidden" name="id">
+    <label>Nombre * <input name="nombre" required minlength="2" maxlength="50"></label>
+    <label>Descripción <input name="descripcion" maxlength="100"></label>
+    <div class="rejilla-2">
+      <label>Categoría *
+        <select name="categoria" class="select-categorias" required></select>
+      </label>
+      <label>Fecha de caducidad *
+        <input name="fecha" type="date" required>
+      </label>
+      <label>Cantidad *
+        <input name="cantidad" type="number" min="0" step="any" required>
+      </label>
+      <label>Unidad de medida *
+        <select name="unidad" id="select-unidades" required></select>
+      </label>
+    </div>
+    <p class="error-formulario" id="error-insumo" role="alert"></p>
+    <div class="acciones-dialogo">
+      <button type="button" class="boton boton-texto" id="boton-cancelar-insumo">Cancelar</button>
+      <button type="submit" class="boton boton-principal">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Mensajes emergentes -->
+<div id="avisos" class="avisos" aria-live="polite"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

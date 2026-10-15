@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,14 @@ public class InsumoDAO {
     public boolean insertar(Insumo i) {
         String sql = "INSERT INTO insumos (nombre, descripcion, categoria_id, cantidad, unidad, fecha_caducidad) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection con = ConexionDB.conectar(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConexionDB.conectar();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             llenarParametros(ps, i);
-            return ps.executeUpdate() > 0;
+            boolean ok = ps.executeUpdate() > 0;
+            try (ResultSet llaves = ps.getGeneratedKeys()) {
+                if (ok && llaves.next()) i.setId(llaves.getInt(1));   // el ID que asigno SQLite
+            }
+            return ok;
         } catch (SQLException e) {
             System.out.println("Error al registrar insumo: " + e.getMessage());
             return false;
@@ -164,7 +170,7 @@ public class InsumoDAO {
 
         String nombreCat = rs.getString("cat_nombre");
         i.setCategoria(new Categoria(rs.getInt("categoria_id"),
-                nombreCat == null ? "Sin categoria" : nombreCat,
+                nombreCat == null ? "Sin categoría" : nombreCat,
                 rs.getString("cat_descripcion")));
         return i;
     }

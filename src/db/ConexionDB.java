@@ -16,7 +16,12 @@ import java.time.LocalDate;
  */
 public class ConexionDB {
 
-    private static final String URL = "jdbc:sqlite:gestion_insumos.db";
+    /**
+     * Ruta del archivo de la base de datos. Por defecto "gestion_insumos.db" en la carpeta
+     * desde donde se ejecuta. En el servidor se puede cambiar con la variable de entorno DB_PATH.
+     */
+    private static final String RUTA_DB = System.getenv().getOrDefault("DB_PATH", "gestion_insumos.db");
+    private static final String URL = "jdbc:sqlite:" + RUTA_DB;
 
     private ConexionDB() {
     }
@@ -26,12 +31,15 @@ public class ConexionDB {
         // SQLite no revisa las llaves foraneas si no se activa en cada conexion
         try (Statement st = con.createStatement()) {
             st.execute("PRAGMA foreign_keys = ON");
+            // En la version web varias personas usan la BD a la vez: si esta ocupada, espera hasta 5 s
+            st.execute("PRAGMA busy_timeout = 5000");
         }
         return con;
     }
 
     /** Crea las tablas si no existen y un administrador por defecto. */
     public static void inicializar() {
+        crearCarpetaDeLaBaseDeDatos();
         String tablaUsuarios =
                 "CREATE TABLE IF NOT EXISTS usuarios ("
                 + " id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -86,6 +94,14 @@ public class ConexionDB {
         }
     }
 
+    /** Si DB_PATH apunta a una carpeta que no existe (ej: /opt/app/datos/), la crea. */
+    private static void crearCarpetaDeLaBaseDeDatos() {
+        java.io.File carpeta = new java.io.File(RUTA_DB).getAbsoluteFile().getParentFile();
+        if (carpeta != null && !carpeta.exists() && !carpeta.mkdirs()) {
+            System.out.println("No se pudo crear la carpeta " + carpeta);
+        }
+    }
+
     private static void crearAdminPorDefecto(Connection con) throws SQLException {
         try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM usuarios")) {
@@ -106,7 +122,7 @@ public class ConexionDB {
             ps.setString(7, "Nombre del sistema");
             ps.setString(8, Seguridad.hashRespuesta("insumos"));
             ps.executeUpdate();
-            System.out.println("Se creo el usuario por defecto -> usuario: admin | contrasena: admin123");
+            System.out.println("Se creó el usuario por defecto -> usuario: admin | contraseña: admin123");
         }
     }
 
@@ -125,18 +141,18 @@ public class ConexionDB {
 
         try (Statement st = con.createStatement()) {
             st.execute("INSERT OR IGNORE INTO categorias (nombre, descripcion) VALUES "
-                    + "('Lacteos', 'Leche, quesos, yogures'),"
+                    + "('Lácteos', 'Leche, quesos, yogures'),"
                     + "('Limpieza', 'Productos de aseo'),"
-                    + "('Medicamentos', 'Botiquin y primeros auxilios')");
+                    + "('Medicamentos', 'Botiquín y primeros auxilios')");
         }
 
         LocalDate hoy = LocalDate.now();
         Object[][] insumos = {
-                {"Leche entera", "Lacteos", 12, "L", hoy.minusDays(2)},
-                {"Yogur natural", "Lacteos", 8, "UNIDAD", hoy.plusDays(3)},
-                {"Queso campesino", "Lacteos", 2.5, "KG", hoy.plusDays(6)},
+                {"Leche entera", "Lácteos", 12, "L", hoy.minusDays(2)},
+                {"Yogur natural", "Lácteos", 8, "UNIDAD", hoy.plusDays(3)},
+                {"Queso campesino", "Lácteos", 2.5, "KG", hoy.plusDays(6)},
                 {"Detergente", "Limpieza", 5, "KG", hoy.plusDays(200)},
-                {"Acetaminofen 500mg", "Medicamentos", 3, "CAJA", hoy.plusDays(90)},
+                {"Acetaminofén 500mg", "Medicamentos", 3, "CAJA", hoy.plusDays(90)},
         };
 
         String sql = "INSERT INTO insumos (nombre, descripcion, categoria_id, cantidad, unidad, fecha_caducidad) "
@@ -155,6 +171,6 @@ public class ConexionDB {
         try (Statement st = con.createStatement()) {
             st.execute("INSERT INTO configuracion (clave, valor) VALUES ('datos_ejemplo', '1')");
         }
-        System.out.println("Se cargaron categorias e insumos de ejemplo.");
+        System.out.println("Se cargaron categorías e insumos de ejemplo.");
     }
 }

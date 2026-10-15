@@ -30,6 +30,8 @@ public class InsumoService {
     /** STRICT + "uuuu" hace que fechas imposibles como 31/02/2026 sean rechazadas. */
     private static final DateTimeFormatter FORMATO_ESTRICTO =
             DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter FORMATO_ISO_ESTRICTO =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT);
 
     private static final double CANTIDAD_MAXIMA = 100000;
     private static final int DIAS_AVISO_MAXIMO = 365;
@@ -114,7 +116,7 @@ public class InsumoService {
         }
         UnidadMedida unidad = UnidadMedida.desdeTexto(unidadTxt);
         if (unidad == null) {
-            throw new ValidacionException("Unidad '" + unidadTxt + "' no valida. Opciones: " + UnidadMedida.opciones());
+            throw new ValidacionException("Unidad '" + unidadTxt + "' no válida. Opciones: " + UnidadMedida.opciones());
         }
 
         // 4. Cantidad
@@ -135,17 +137,17 @@ public class InsumoService {
 
     private Categoria validarCategoria(String idTxt) throws ValidacionException {
         if (Validaciones.estaVacio(idTxt)) {
-            throw new ValidacionException("La categoria es obligatoria.");
+            throw new ValidacionException("La categoría es obligatoria.");
         }
         int id;
         try {
             id = Integer.parseInt(idTxt.trim());
         } catch (NumberFormatException e) {
-            throw new ValidacionException("Debe escribir el ID numerico de la categoria.");
+            throw new ValidacionException("Debe escribir el ID numérico de la categoría.");
         }
         Categoria c = categoriaDAO.buscarPorId(id);
         if (c == null) {
-            throw new ValidacionException("No existe una categoria con ID " + id + ".");
+            throw new ValidacionException("No existe una categoría con ID " + id + ".");
         }
         return c;
     }
@@ -158,7 +160,7 @@ public class InsumoService {
         try {
             cantidad = Double.parseDouble(cantidadTxt.trim().replace(',', '.'));  // acepta 2,5 y 2.5
         } catch (NumberFormatException e) {
-            throw new ValidacionException("La cantidad debe ser un numero (ej: 10 o 2.5).");
+            throw new ValidacionException("La cantidad debe ser un número (ej: 10 o 2.5).");
         }
         if (cantidad <= 0) {
             throw new ValidacionException("La cantidad debe ser mayor que cero.");
@@ -168,24 +170,30 @@ public class InsumoService {
         }
         if (!unidad.permiteDecimales() && cantidad != Math.floor(cantidad)) {
             throw new ValidacionException("Para la unidad '" + unidad.getSimbolo()
-                    + "' la cantidad debe ser un numero entero.");
+                    + "' la cantidad debe ser un número entero.");
         }
         return cantidad;
     }
 
-    /** Convierte "dd/mm/aaaa" a LocalDate. Rechaza formatos incorrectos y fechas imposibles. */
+    /**
+     * Convierte la fecha a LocalDate. Acepta "dd/mm/aaaa" (consola) y "aaaa-mm-dd" (formulario web).
+     * Rechaza formatos incorrectos y fechas imposibles.
+     */
     public LocalDate convertirFecha(String fechaTxt) throws ValidacionException {
         if (Validaciones.estaVacio(fechaTxt)) {
             throw new ValidacionException("La fecha de caducidad es obligatoria.");
         }
         LocalDate fecha;
         try {
-            fecha = LocalDate.parse(fechaTxt.trim(), FORMATO_ESTRICTO);
+            String t = fechaTxt.trim();
+            fecha = t.contains("-")
+                    ? LocalDate.parse(t, FORMATO_ISO_ESTRICTO)
+                    : LocalDate.parse(t, FORMATO_ESTRICTO);
         } catch (DateTimeParseException e) {
-            throw new ValidacionException("Fecha invalida. Use el formato dd/mm/aaaa (ej: 25/12/2026).");
+            throw new ValidacionException("Fecha inválida. Use el formato dd/mm/aaaa (ej: 25/12/2026).");
         }
         if (fecha.isAfter(LocalDate.now().plusYears(10))) {
-            throw new ValidacionException("La fecha de caducidad no puede ser a mas de 10 anos.");
+            throw new ValidacionException("La fecha de caducidad no puede ser a más de 10 años.");
         }
         return fecha;
     }
@@ -199,7 +207,7 @@ public class InsumoService {
     public void setDiasAviso(int dias) throws ValidacionException {
         verificarPermiso();
         if (dias < 1 || dias > DIAS_AVISO_MAXIMO) {
-            throw new ValidacionException("Los dias de aviso deben estar entre 1 y " + DIAS_AVISO_MAXIMO + ".");
+            throw new ValidacionException("Los días de aviso deben estar entre 1 y " + DIAS_AVISO_MAXIMO + ".");
         }
         configDAO.setDiasAviso(dias);
     }
@@ -239,7 +247,7 @@ public class InsumoService {
 
     public List<Insumo> buscarPorCategoria(int idCategoria) throws ValidacionException {
         if (categoriaDAO.buscarPorId(idCategoria) == null) {
-            throw new ValidacionException("No existe una categoria con ID " + idCategoria + ".");
+            throw new ValidacionException("No existe una categoría con ID " + idCategoria + ".");
         }
         return insumoDAO.buscarPorCategoria(idCategoria);
     }

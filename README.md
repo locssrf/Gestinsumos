@@ -1,131 +1,118 @@
-# Sistema de Gestión de Insumos — Avance Sprint 1
+# Sistema de Gestión de Insumos
 
-Proyecto de POO en Java con base de datos SQLite.
+Proyecto de POO en Java + SQLite. Registra insumos con su fecha de caducidad y **avisa cuando están por caducar o ya caducaron**.
 
-## Avance entregado (~30 %)
+Tiene dos formas de usarse, que comparten **las mismas clases** de modelo, DAO y servicio:
 
-| Historia | Descripción | Dónde está |
+- **Versión web** (`app.MainWeb`): página que se abre en el navegador. Es la que se sube a AWS.
+- **Versión de consola** (`app.Main`): menús en la terminal.
+
+## Historias de usuario
+
+### Sprint 1 — Gestión de usuarios
+| Historia | Qué hace | Dónde está |
 |---|---|---|
-| GES-21 | Iniciar sesión con credenciales (máx. 3 intentos) | `AuthService.iniciarSesion()` |
-| GES-22 | Roles y permisos (Administrador / Empleado) | `Usuario`, `Administrador`, `Empleado`, `UsuarioService` |
+| GES-21 | Iniciar sesión. En web, bloqueo de 5 min tras 5 intentos fallidos | `AuthService.iniciarSesion()`, `ApiControlador.login()` |
+| GES-22 | Roles Administrador / Empleado: cada uno ve y puede hacer cosas distintas | `Usuario`, `Administrador`, `Empleado`, `UsuarioService` |
 | GES-23 | Recuperar contraseña con pregunta de seguridad | `AuthService.recuperarPassword()` |
 | GES-7  | Cerrar sesión | `AuthService.cerrarSesion()` |
-| GES-14 | Personalizar perfil (nombre, correo, teléfono, contraseña, pregunta) | `UsuarioService` |
-| Base Sprint 2 | Tablas `insumos` y `categorias` + clase `Insumo` con cálculo de días para caducar | `ConexionDB`, `modelo/Insumo.java` |
+| GES-14 | Editar perfil, contraseña y pregunta de seguridad | `UsuarioService` |
 
-## Estructura (arquitectura por capas)
+### Sprint 2 — Gestión de insumos
+| Historia | Qué hace | Dónde está |
+|---|---|---|
+| GES-24 | Categorías: crear, editar, eliminar (no se borra si tiene insumos, sin nombres repetidos) | `Categoria`, `CategoriaDAO`, `CategoriaService` |
+| GES-4  | Registrar, modificar y eliminar insumos | `InsumoDAO`, `InsumoService` |
+| GES-25 | Validación de datos obligatorios: unidad de una lista cerrada, cantidad > 0 (entera para unidad/caja/paquete), fecha válida y no pasada | `InsumoService.validarYConstruir()`, `UnidadMedida` |
+| GES-2  | Alertas de caducidad al entrar, días de aviso configurables, actualizar fecha, eliminar caducados | `Insumo.getEstado()`, `InsumoService`, `ConfiguracionDAO` |
+| GES-3  | Búsqueda por nombre, categoría y estado (combinables en la web) | `InsumoService.buscarPor...()`, `InsumoDAO` |
+
+## Estructura
 
 ```
-src/
- ├─ app/        Main.java              → punto de entrada
- ├─ modelo/     Usuario (abstracta), Administrador, Empleado, Rol (enum), Insumo
- ├─ db/         ConexionDB             → conexión SQLite y creación de tablas
- ├─ dao/        UsuarioDAO             → consultas SQL (PreparedStatement)
- ├─ servicio/   AuthService, UsuarioService → reglas de negocio y validaciones
- ├─ vista/      MenuPrincipal          → menús de consola
- └─ util/       Seguridad (SHA-256), Validaciones, Consola, ValidacionException
-lib/
- └─ sqlite-jdbc.jar                    → driver de SQLite
+GestionInsumos/
+├─ src/
+│  ├─ app/        Main (consola), MainWeb (web)
+│  ├─ modelo/     Usuario (abstracta), Administrador, Empleado, Rol,
+│  │              Insumo, Categoria, UnidadMedida, EstadoInsumo
+│  ├─ db/         ConexionDB  → crea las tablas y datos de ejemplo
+│  ├─ dao/        UsuarioDAO, CategoriaDAO, InsumoDAO, ConfiguracionDAO  → SQL
+│  ├─ servicio/   AuthService, UsuarioService, CategoriaService, InsumoService → reglas
+│  ├─ vista/      MenuPrincipal, MenuInsumos  → interfaz de consola
+│  ├─ web/        ServidorWeb, ApiControlador, Sesion, GestorSesiones,
+│  │              Peticion, Json, ArchivosEstaticos  → interfaz web
+│  └─ util/       Seguridad (SHA-256), Validaciones, Consola, ValidacionException
+├─ web/           index.html, css/estilos.css, js/app.js  → la página
+├─ lib/           sqlite-jdbc.jar
+├─ dist/          GestionInsumos.jar  → listo para ejecutar / subir a AWS
+├─ deploy/        gestion-insumos.service (systemd)
+├─ compilar.bat / compilar.sh
+├─ Dockerfile
+└─ DESPLIEGUE_AWS.md
 ```
+
+### Cómo funciona la versión web
+
+```
+Navegador ──HTTP──► ServidorWeb ─┬─ /api/... ─► ApiControlador ─► servicios ─► DAO ─► SQLite
+                                 └─ /...     ─► ArchivosEstaticos (HTML, CSS, JS)
+```
+
+- Usa el servidor HTTP que ya trae Java (`com.sun.net.httpserver`), sin frameworks.
+- Cada navegador recibe una cookie con un token aleatorio. Ese token apunta a un objeto `Sesion` que tiene **su propio** `AuthService`, `InsumoService`, etc. Así se reutilizan los mismos servicios de la consola.
+- Toda validación y control de permisos ocurre en el servidor; la página solo muestra u oculta botones.
+- Las rutas de la API se registran con **expresiones lambda** que implementan la interfaz funcional `Accion`.
 
 ## Conceptos de POO aplicados
 
-- **Encapsulamiento:** atributos `private` con getters/setters.
-- **Abstracción:** `Usuario` es clase abstracta con métodos abstractos.
-- **Herencia:** `Administrador` y `Empleado` extienden `Usuario`.
-- **Polimorfismo:** `puedeGestionarUsuarios()` responde distinto según el objeto; el menú muestra u oculta opciones según eso.
-- **Enum:** `Rol`.
-- **Excepción propia:** `ValidacionException`.
+| Concepto | Dónde |
+|---|---|
+| Encapsulamiento | atributos `private` + getters/setters en todos los modelos |
+| Abstracción | `Usuario` es abstracta con métodos abstractos |
+| Herencia | `Administrador` y `Empleado` extienden `Usuario` |
+| Polimorfismo | `puedeModificarInsumos()` / `puedeGestionarUsuarios()` deciden permisos y qué se muestra |
+| Composición | `Insumo` tiene un objeto `Categoria`; `Sesion` tiene sus servicios |
+| Enums con atributos | `Rol`, `UnidadMedida` (sabe si acepta decimales), `EstadoInsumo` |
+| Interfaces y lambdas | `ApiControlador.Accion` |
+| Excepción propia | `ValidacionException` |
+| Colecciones | `List`, `Map`, `ConcurrentHashMap` (sesiones de varios usuarios a la vez) |
+| Fechas | `LocalDate`, `ChronoUnit.DAYS`, `DateTimeFormatter` estricto |
+
+## Seguridad
+- Contraseñas guardadas con hash SHA-256 (nunca en texto plano).
+- `PreparedStatement` en todas las consultas (evita inyección SQL).
+- Cookie de sesión `HttpOnly` y `SameSite=Strict`; la sesión expira tras 30 min sin uso.
+- Bloqueo temporal tras 5 intentos fallidos de inicio de sesión.
+- Si el administrador desactiva una cuenta o cambia un rol, se aplica en la siguiente acción del usuario.
+- La página escapa todo el texto que viene del usuario (evita XSS).
 
 ## Cómo ejecutarlo
 
-**NetBeans / IntelliJ / Eclipse:** crear proyecto Java, copiar las carpetas de `src`, agregar `lib/sqlite-jdbc.jar` como librería y ejecutar `app.Main`.
+### En NetBeans
+1. Proyecto Java con fuentes existentes → carpeta `src`. Agregar `lib/sqlite-jdbc.jar` en **Libraries**.
+2. La carpeta `web/` debe estar en la **raíz del proyecto** (al lado de `src`).
+3. Properties → Run → Main Class:
+   - `app.MainWeb` → abrir **http://localhost:8080** en el navegador
+   - `app.Main` → versión de consola
+4. Properties → Sources → Encoding: **UTF-8**.
 
-**Consola:**
+### Con el .jar
 ```
-javac -d out -cp lib/sqlite-jdbc.jar src/*/*.java
-java -cp "out;lib/sqlite-jdbc.jar" app.Main      (Windows)
-java -cp "out:lib/sqlite-jdbc.jar" app.Main      (Linux/Mac)
+java -jar dist/GestionInsumos.jar
 ```
+y abrir http://localhost:8080. Para recompilar el .jar: `compilar.bat` (Windows) o `./compilar.sh`.
 
-La base de datos `gestion_insumos.db` se crea sola la primera vez.
+### En AWS
+Ver **[DESPLIEGUE_AWS.md](DESPLIEGUE_AWS.md)**.
 
-**Usuario inicial:** `admin` / `admin123` (pregunta de seguridad: "Nombre del sistema", respuesta: `insumos`).
-=======
-# Gestinsumos
+## Datos iniciales
+- Usuario: `admin` / `admin123` (pregunta: "Nombre del sistema", respuesta: `insumos`).
+- La primera vez se cargan 3 categorías y 5 insumos de ejemplo (uno caducado, dos por caducar, dos vigentes) para mostrar las alertas.
 
-**Gestinsumos** es un sistema de gestión de inventario diseñado para automatizar el control de vencimiento de insumos y productos mediante un método de **semaforización** (verde, amarillo, rojo) que clasifica automáticamente cada ítem según su proximidad a la fecha de caducidad.
-
-## Objetivo
-
-Reducir al mínimo las pérdidas económicas y operativas causadas por productos vencidos, dando visibilidad en tiempo real del estado del inventario y anticipando su consumo antes de que caduque.
-
-## Características principales
-
-- **Semaforización automática**: clasifica los insumos por colores según umbrales de días configurables, adaptables a distintos tipos de producto.
-- **Dashboard de métricas**: visualiza mermas evitadas, insumos próximos a vencer y estadísticas clave del inventario.
-- **Alertas automáticas por correo**: notifica al equipo cuando un insumo entra en estado crítico (rojo).
-- **Gestión de insumos**: creación, edición y categorización de productos, con validación de datos obligatorios (unidad de medida, cantidad, fecha).
-- **Historial de movimientos**: trazabilidad completa de quién registró, modificó o consumió cada insumo.
-- **Gestión de usuarios y roles**: control de acceso diferenciado entre administradores y usuarios.
-- **Reportes exportables**: generación de reportes en PDF y Excel para auditorías.
-- **Búsqueda y filtrado**: localización rápida de insumos por nombre o categoría.
-
-## Stack tecnológico
-
-| Capa | Tecnología |
+## Base de datos (SQLite)
+| Tabla | Contenido |
 |---|---|
-| Backend | _Por definir_ |
-| Frontend | _Por definir_ |
-| Base de datos | _Por definir_ |
-| Autenticación | _Por definir_ |
-| Notificaciones | _Por definir_ |
-
-## Estructura del proyecto
-
-```
-gestinsumos/
-├── backend/          # API y lógica de negocio
-├── frontend/         # Interfaz de usuario
-├── docs/             # Documentación adicional
-└── README.md
-```
-
-## Instalación
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/gestinsumos.git
-cd gestinsumos
-
-# Instalar dependencias
-# (completa según tu stack: npm install / pip install -r requirements.txt / etc.)
-
-# Configurar variables de entorno
-cp .env.example .env
-
-# Ejecutar el proyecto
-# (completa el comando de arranque)
-```
-
-## Requisitos previos
-
-- _Por definir (ej. Node.js, Python, Docker, etc.)_
-
-## Roadmap
-
-El desarrollo está organizado en sprints bajo metodología Scrum:
-
-1. **Sprint 1 — Gestión de usuario**: autenticación, roles y permisos.
-2. **Sprint 2 — Gestión de insumos**: CRUD, categorías y validaciones.
-3. **Sprint 3 — Control y movimiento**: semaforización, historial y alertas.
-4. **Sprint 4 — Reportes y consulta**: dashboard y exportación de reportes.
-
-## Licencia
-
-_Por definir_
-
-## Estado del proyecto
-
-En desarrollo activo.
->>>>>>> 4e93398bcc0abf346bfd873758939d75419384f6
+| `usuarios` | cuentas, rol, contraseña cifrada, pregunta de seguridad, activo |
+| `categorias` | nombre único, descripción |
+| `insumos` | nombre, cantidad, unidad, fecha de caducidad (`AAAA-MM-DD`), llave foránea a `categorias` |
+| `configuracion` | días de aviso de caducidad (por defecto 7) |
